@@ -117,8 +117,9 @@ class StripeCheckoutCustom extends StripeCheckout {
                         panelLabel: "' . $this->panelLabel . '",
                         zipCode: "' . $this->validateZipCode . '",
                         email: "' . $this->userEmail . '",
-                        allowRememberMe: "' . $this->allowRemember . '",
-                        token: ' . $this->tokenFunction . ',
+                        allowRememberMe: "' . $this->allowRemember . '",'. 
+                        ($this->collectBillingAddress ? 'billingAddress: '.$this->collectBillingAddress.',' : '').
+                        'token: ' . $this->tokenFunction . ',
                         opened: ' . $this->openedFunction . ',
                         closed: ' . $this->closedFunction . '
                     });
