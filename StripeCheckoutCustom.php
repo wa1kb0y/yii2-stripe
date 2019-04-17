@@ -57,6 +57,12 @@ class StripeCheckoutCustom extends StripeCheckout {
      */
     public $closedFunction;
 
+    /**
+     * function fired before Stripe handler loads
+     * @var JsExpression
+     */
+    public $beforeOpenFunction;
+
     private static $handlerRegistered = false;
 
     /**
@@ -74,6 +80,9 @@ class StripeCheckoutCustom extends StripeCheckout {
         }
         if (!isset($this->closedFunction)) {
             $this->closedFunction = new JsExpression('function() { }');
+        }
+        if (!isset($this->beforeOpenFunction)) {
+            $this->beforeOpenFunction = new JsExpression('function() { return true }');
         }
         parent::init();
     }
@@ -108,21 +117,27 @@ class StripeCheckoutCustom extends StripeCheckout {
         }
 
         $js = 'jQuery("#' . $this->buttonOptions['id'] . '").on("click", function(e) {
-                    handler.open({
-                        name: "' . $this->name . '",
-                        description: "' . $this->description . '",
-                        amount: ' . $this->amount . ',
-                        image: "' . $this->image . '",
-                        currency: "' . $this->currency . '",
-                        panelLabel: "' . $this->panelLabel . '",
-                        zipCode: "' . $this->validateZipCode . '",
-                        email: "' . $this->userEmail . '",
-                        allowRememberMe: "' . $this->allowRemember . '",'. 
-                        ($this->collectBillingAddress ? 'billingAddress: '.$this->collectBillingAddress.',' : '').
-                        'token: ' . $this->tokenFunction . ',
-                        opened: ' . $this->openedFunction . ',
-                        closed: ' . $this->closedFunction . '
-                    });
+
+                    var beforeOpen = '.$this->beforeOpenFunction.'
+
+                    if (beforeOpen()) {
+                        handler.open({
+                            name: "' . $this->name . '",
+                            description: "' . $this->description . '",
+                            amount: ' . $this->amount . ',
+                            image: "' . $this->image . '",
+                            currency: "' . $this->currency . '",
+                            panelLabel: "' . $this->panelLabel . '",
+                            zipCode: "' . $this->validateZipCode . '",
+                            email: "' . $this->userEmail . '",
+                            allowRememberMe: "' . $this->allowRemember . '",'. 
+                            ($this->collectBillingAddress ? 'billingAddress: '.$this->collectBillingAddress.',' : '').
+                            'token: ' . $this->tokenFunction . ',
+                            opened: ' . $this->openedFunction . ',
+                            closed: ' . $this->closedFunction . '
+                        });
+                    }
+
                     e.preventDefault();
          });';
         $view->registerJs($js);
